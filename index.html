@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cake & Cookies Ordering</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #fff8f0;
+      color: #333;
+    }
+    h1 {
+      color: #d2691e;
+    }
+    form {
+      display: inline-block;
+      padding: 20px;
+      border: 2px solid #d2691e;
+      border-radius: 10px;
+      background: #fff;
+    }
+    button {
+      background: #d2691e;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #a0522d;
+    }
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍰 Cake & Cookies Ordering</h1>
+
+  <form id="orderForm">
+    <label>Name:</label><br>
+    <input type="text" id="name" required><br><br>
+
+    <label>Mobile:</label><br>
+    <input type="text" id="mobile" required><br><br>
+
+    <label>Item:</label><br>
+    <select id="item">
+      <option value="Cake">Cake</option>
+      <option value="Cookies">Cookies</option>
+    </select><br><br>
+
+    <label>Quantity:</label><br>
+    <input type="number" id="quantity" value="1" min="1"><br><br>
+
+    <button type="submit">Place Order</button>
+  </form>
+
+  <p id="status"></p>
+  <h2>📜 Order History</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>Item</th>
+        <th>Quantity</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="ordersTable"></tbody>
+  </table>
+
+  <script>
+    // Handle new order
+    document.getElementById("orderForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const order = {
+        name: document.getElementById("name").value,
+        mobile: document.getElementById("mobile").value,
+        item: document.getElementById("item").value,
+        quantity: document.getElementById("quantity").value,
+      };
+
+      const res = await fetch("/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById("status").innerText = "✅ Order placed successfully!";
+        loadOrders();
+      } else {
+        document.getElementById("status").innerText = "❌ Error placing order.";
+      }
+    });
+
+    // Load all orders
+    async function loadOrders() {
+      const res = await fetch("/orders");
+      const orders = await res.json();
+      const table = document.getElementById("ordersTable");
+      table.innerHTML = "";
+
+      orders.forEach(o => {
+        table.innerHTML += `
+          <tr>
+            <td>${o.id}</td>
+            <td>${o.name}</td>
+            <td>${o.mobile}</td>
+            <td>${o.item}</td>
+            <td>${o.quantity}</td>
+            <td>${o.created_at}</td>
+          </tr>`;
+      });
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
